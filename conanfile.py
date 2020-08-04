@@ -12,7 +12,7 @@ class ShadercConan(ConanFile):
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     requires = (
-        "glslang/v2020.2@wumo/stable"
+        "glslang/2020.2@wumo/stable"
     )
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {'shared': False, "fPIC": True}
@@ -38,7 +38,6 @@ class ShadercConan(ConanFile):
             raise ConanInvalidConfiguration("Current shared library build is broken")
 
     def source(self):
-        # https://github.com/glfw/glfw/tree/e0c77f71f90e3bb8495c5c88fb0fb054d71cf7fc
         tools.get(f"{self.homepage}/archive/v{self.version}.zip")
         extracted_folder = f"{self.name}-{self.version}"
         os.rename(extracted_folder, self._source_subfolder)
@@ -63,6 +62,7 @@ class ShadercConan(ConanFile):
         cmake.install()
     
     def package_info(self):
+        # self.cpp_info.libs = tools.collect_libs(self)
         # shaderc_util
         self.cpp_info.components["shaderc_util"].names["cmake_find_package"] = "shaderc_util"
         self.cpp_info.components["shaderc_util"].names["cmake_find_package_multi"] = "shaderc_util"

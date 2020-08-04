@@ -4,15 +4,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 --- libshaderc_util/CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
-+++ libshaderc_util/CMakeLists.txt	(date 1596530375878)
-@@ -45,9 +45,34 @@
- add_definitions(-DENABLE_HLSL)
++++ libshaderc_util/CMakeLists.txt	(date 1596542779697)
+@@ -46,8 +46,33 @@
  
  find_package(Threads)
--target_link_libraries(shaderc_util PRIVATE
+ target_link_libraries(shaderc_util PRIVATE
 -  glslang OSDependent OGLCompiler HLSL glslang SPIRV
 -  SPIRV-Tools-opt ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(shaderc_util PUBLIC
 +#  glslang OSDependent OGLCompiler HLSL glslang SPIRV
 +#  SPIRV-Tools-opt
 +  ${CONAN_LIBS}
@@ -49,7 +47,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 --- libshaderc/CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
-+++ libshaderc/CMakeLists.txt	(date 1596532081237)
++++ libshaderc/CMakeLists.txt	(date 1596542733066)
 @@ -31,17 +31,17 @@
      PRIVATE ${glslang_SOURCE_DIR}
              ${SPIRV-Headers_SOURCE_DIR}/include)
@@ -94,18 +92,17 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
  set(SHADERC_LIBS
 -  glslang OSDependent OGLCompiler glslang ${CMAKE_THREAD_LIBS_INIT}
 +#  glslang OSDependent OGLCompiler glslang
++  ${CONAN_LIBS}
    shaderc_util
 -  SPIRV # from glslang
 -  SPIRV-Tools
-+  ${CONAN_LIBS}
 +#  SPIRV # from glslang
 +#  SPIRV-Tools
 +  ${CMAKE_THREAD_LIBS_INIT}
  )
  
--target_link_libraries(shaderc PRIVATE ${SHADERC_LIBS})
+ target_link_libraries(shaderc PRIVATE ${SHADERC_LIBS})
 -target_link_libraries(shaderc_shared PRIVATE ${SHADERC_LIBS})
-+target_link_libraries(shaderc PUBLIC ${SHADERC_LIBS})
 +#target_link_libraries(shaderc_shared PRIVATE ${SHADERC_LIBS})
  
  shaderc_add_tests(
@@ -180,7 +177,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 --- CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
-+++ CMakeLists.txt	(date 1596527291165)
++++ CMakeLists.txt	(date 1596542802314)
 @@ -111,9 +111,12 @@
  endif(MSVC)
  
@@ -220,14 +217,12 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 --- glslc/CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
-+++ glslc/CMakeLists.txt	(date 1596532091248)
-@@ -42,18 +42,19 @@
-   add_definitions(-DSHADERC_ENABLE_WGSL_OUTPUT=1)
++++ glslc/CMakeLists.txt	(date 1596542754282)
+@@ -43,17 +43,18 @@
  endif(SHADERC_ENABLE_WGSL_OUTPUT)
  
--target_link_libraries(glslc PRIVATE
+ target_link_libraries(glslc PRIVATE
 -  glslang OSDependent OGLCompiler HLSL glslang SPIRV    # Glslang libraries
-+target_link_libraries(glslc PUBLIC
 +#  glslang OSDependent OGLCompiler HLSL glslang SPIRV    # Glslang libraries
    $<$<BOOL:${SHADERC_ENABLE_WGSL_OUTPUT}>:libtint>      # Tint libraries, optional
    shaderc_util shaderc                                  # internal Shaderc libraries
