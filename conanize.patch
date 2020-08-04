@@ -1,0 +1,84 @@
+Index: libshaderc_util/CMakeLists.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- libshaderc_util/CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
++++ libshaderc_util/CMakeLists.txt	(date 1596451231799)
+@@ -46,8 +46,10 @@
+ 
+ find_package(Threads)
+ target_link_libraries(shaderc_util PRIVATE
+-  glslang OSDependent OGLCompiler HLSL glslang SPIRV
+-  SPIRV-Tools-opt ${CMAKE_THREAD_LIBS_INIT})
++#  glslang OSDependent OGLCompiler HLSL glslang SPIRV
++#  SPIRV-Tools-opt
++  ${CONAN_LIBS}
++  ${CMAKE_THREAD_LIBS_INIT})
+ 
+ shaderc_add_tests(
+   TEST_PREFIX shaderc_util
+Index: libshaderc/CMakeLists.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- libshaderc/CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
++++ libshaderc/CMakeLists.txt	(date 1596503245391)
+@@ -62,10 +62,12 @@
+ 
+ find_package(Threads)
+ set(SHADERC_LIBS
+-  glslang OSDependent OGLCompiler glslang ${CMAKE_THREAD_LIBS_INIT}
++#  glslang OSDependent OGLCompiler glslang
+   shaderc_util
+-  SPIRV # from glslang
+-  SPIRV-Tools
++#  SPIRV # from glslang
++#  SPIRV-Tools
++  ${CONAN_LIBS}
++  ${CMAKE_THREAD_LIBS_INIT}
+ )
+ 
+ target_link_libraries(shaderc PRIVATE ${SHADERC_LIBS})
+Index: CMakeLists.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
++++ CMakeLists.txt	(date 1596505960682)
+@@ -111,9 +111,12 @@
+ endif(MSVC)
+ 
+ 
++#include(${CMAKE_CURRENT_LIST_DIR}/cmake/conan.cmake)
++#conan_cmake_run(BASIC_SETUP  CONANFILE conanfile.py  BUILD missing)
++
+ # Configure subdirectories.
+ # We depend on these for later projects, so they should come first.
+-add_subdirectory(third_party)
++#add_subdirectory(third_party)
+ 
+ if(SHADERC_ENABLE_SPVC)
+ add_subdirectory(libshaderc_spvc)
+Index: glslc/CMakeLists.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- glslc/CMakeLists.txt	(revision c626b912dc4568867b29c5b221df6aac75390ab5)
++++ glslc/CMakeLists.txt	(date 1596505612007)
+@@ -43,9 +43,10 @@
+ endif(SHADERC_ENABLE_WGSL_OUTPUT)
+ 
+ target_link_libraries(glslc PRIVATE
+-  glslang OSDependent OGLCompiler HLSL glslang SPIRV    # Glslang libraries
+-  $<$<BOOL:${SHADERC_ENABLE_WGSL_OUTPUT}>:libtint>      # Tint libraries, optional
++#  glslang OSDependent OGLCompiler HLSL glslang SPIRV    # Glslang libraries
++  ${CONAN_LIBS}
+   shaderc_util shaderc                                  # internal Shaderc libraries
++  $<$<BOOL:${SHADERC_ENABLE_WGSL_OUTPUT}>:libtint>      # Tint libraries, optional
+   ${CMAKE_THREAD_LIBS_INIT})
+ 
+ add_executable(glslc_exe src/main.cc)
