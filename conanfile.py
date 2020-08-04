@@ -1,6 +1,7 @@
 import os
 
 from conans import ConanFile, CMake, tools
+from conans.errors import ConanInvalidConfiguration
 
 class ShadercConan(ConanFile):
     name = "shaderc"
@@ -11,11 +12,12 @@ class ShadercConan(ConanFile):
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     requires = (
-        "spirv-tools/v2020.3",
         "glslang/v2020.2@wumo/stable"
     )
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {'shared': False, "fPIC": True}
+    
+    _cmake = None
     
     @property
     def _source_subfolder(self):
@@ -32,7 +34,9 @@ class ShadercConan(ConanFile):
     def configure(self):
         if self.settings.compiler.cppstd:
             tools.check_min_cppstd(self, 11)
-    
+        if self.options.shared:
+            raise ConanInvalidConfiguration("Current shared library build is broken")
+
     def source(self):
         # https://github.com/glfw/glfw/tree/e0c77f71f90e3bb8495c5c88fb0fb054d71cf7fc
         tools.get(f"{self.homepage}/archive/v{self.version}.zip")
@@ -40,19 +44,37 @@ class ShadercConan(ConanFile):
         os.rename(extracted_folder, self._source_subfolder)
     
     def configure_cmake(self):
-        cmake = CMake(self)
-        cmake.definitions["SHADERC_SKIP_TESTS"] = True
-        cmake.configure(build_folder=self._build_subfolder)
-        return cmake
+        if self._cmake:
+            return self._cmake
+        self._cmake = CMake(self)
+        self._cmake.definitions["SHADERC_SKIP_TESTS"] = True
+        self._cmake.definitions["SHADERC_ENABLE_SHARED_CRT"] = True
+        self._cmake.configure(build_folder=self._build_subfolder)
+        return self._cmake
     
     def build(self):
         tools.patch(base_path=self._source_subfolder, patch_file="conanize.patch")
         cmake = self.configure_cmake()
-        cmake.build()
+        cmake.build(target="glslc")
     
     def package(self):
+        self.copy("LICENSE", dst="licenses", src=self._source_subfolder)
         cmake = self.configure_cmake()
         cmake.install()
     
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        # shaderc_util
+        self.cpp_info.components["shaderc_util"].names["cmake_find_package"] = "shaderc_util"
+        self.cpp_info.components["shaderc_util"].names["cmake_find_package_multi"] = "shaderc_util"
+        self.cpp_info.components["shaderc_util"].libs = ["shaderc_util"]
+        self.cpp_info.components["shaderc_util"].requires = ["glslang::spirv"]
+        # shaderc
+        self.cpp_info.components["shaderc-core"].names["cmake_find_package"] = "shaderc"
+        self.cpp_info.components["shaderc-core"].names["cmake_find_package_multi"] = "shaderc"
+        self.cpp_info.components["shaderc-core"].libs = ["shaderc"]
+        self.cpp_info.components["shaderc-core"].requires = ["shaderc_util"]
+        # glslc
+        self.cpp_info.components["glslc"].names["cmake_find_package"] = "glslc"
+        self.cpp_info.components["glslc"].names["cmake_find_package_multi"] = "glslc"
+        self.cpp_info.components["glslc"].libs = ["glslc"]
+        self.cpp_info.components["glslc"].requires = ["shaderc-core"]
